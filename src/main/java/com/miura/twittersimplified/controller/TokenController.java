@@ -2,6 +2,7 @@ package com.miura.twittersimplified.controller;
 
 import com.miura.twittersimplified.dto.LoginRequest;
 import com.miura.twittersimplified.dto.LoginResponse;
+import com.miura.twittersimplified.entities.Role;
 import com.miura.twittersimplified.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 @RestController
 public class TokenController {
@@ -39,6 +41,11 @@ public class TokenController {
             throw new BadCredentialsException("Usuario ou senha invalidos!");
         }
 
+        var scopes = user.get().getRoles()
+                .stream()
+                .map(Role::getName)
+                .collect(Collectors.joining(" "));
+
         var now = Instant.now();
         var expiresIn = 300L;
 
@@ -47,6 +54,7 @@ public class TokenController {
                 .subject(user.get().getUserId().toString())
                 .expiresAt(now.plusSeconds(expiresIn))
                 .issuedAt(now)
+                .claim("scope", scopes)
                 .build();
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
