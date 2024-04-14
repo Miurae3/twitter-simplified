@@ -42,6 +42,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST,"/login").permitAll() /* Linha que deixa o endpoint Login exposto para todos */
                         .requestMatchers(HttpMethod.POST,"/users").permitAll()
+                        .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
@@ -49,6 +50,16 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+
+    public static final String[] AUTH_WHITELIST = {
+            "/api/vi/auth/**",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+
+    };
 
 
     //Criação do encoder
@@ -60,6 +71,8 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(jwks);
 
     }
+
+
 
     //Criação do decoder
     @Bean
